@@ -13,6 +13,9 @@ int main(int argc, char* argv[]) {
             std::cerr << "No GPU support detected. Exiting." << std::endl;
             return -1;
         }
+
+        std::string gpu_model = detect_gpu_model();
+        std::cout << "Detected GPU Model: " << gpu_model << std::endl;
         // Upload GPU Resource
     } else if (choice == 2) {
         // Browse and Borrow GPU Resource
