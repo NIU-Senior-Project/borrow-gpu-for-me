@@ -12,12 +12,22 @@
 
 1. 下載並安裝 Borrow-GPU-For-Me 客戶端。
 
-```sh
-git clone https://github.com/NIU-Senior-Project/borrow-gpu-for-me.git
-cd borrow-gpu-for-me
-cmake -B build
-cmake --build build --config RELEASE
-cmake --install build --config RELEASE
-```
+    ```bash
+    git clone https://github.com/NIU-Senior-Project/borrow-gpu-for-me.git
+    cd borrow-gpu-for-me
+    cmake -B build
+    cmake --build build --config RELEASE
+    cmake --install build --config RELEASE
+    ```
 
 2. 將你的 GPU 資源上傳至平臺，或瀏覽並借用其他使用者的 GPU 資源。
+
+    ```bash
+    # 上傳 GPU 資源
+    borrow-gpu-for-me --gpu
+    ```
+
+    ```bash
+    # 瀏覽並借用 GPU 資源
+    borrow-gpu-for-me --list
+    ```
