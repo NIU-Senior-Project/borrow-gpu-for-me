@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "gpu.h"
+#include "tool.h"
 
 int main(int argc, char* argv[]) {
     std::cout << "Select Mode:" << std::endl;
@@ -11,6 +12,11 @@ int main(int argc, char* argv[]) {
     if (choice == 1) {
         if (!have_gpu_support()) {
             std::cerr << "No GPU support detected. Exiting." << std::endl;
+            return -1;
+        }
+
+        if (!server_tools_installed()) {
+            std::cerr << "Required server tools are not installed. Exiting." << std::endl;
             return -1;
         }
 
