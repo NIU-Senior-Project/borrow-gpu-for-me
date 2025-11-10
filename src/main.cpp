@@ -25,6 +25,7 @@ int main(int argc, char* argv[]) {
         // Upload GPU Resource
     } else if (choice == 2) {
         // Browse and Borrow GPU Resource
+        
     }
 
     return 0;
