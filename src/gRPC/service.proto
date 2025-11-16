@@ -1,0 +1,19 @@
+message JobRequest {
+  string docker_image_url = 1; // e.g., "pytorch/pytorch:2.0-cuda11.7-cudnn8-runtime"
+  string shell_script_base64 = 2; // 將 shell script 內容編碼後傳輸
+  string required_gpu_model = 3; // 請求特定型號，e.g., "RTX 4090" (可選)
+  int32 required_gpu_memory_mb = 4; // 請求最低 GPU 記憶體 (MB)
+  string user_id = 5; // 用於計費和追蹤
+  int64 max_execution_time_seconds = 6; // 最大執行時間限制
+}
+
+message JobResponse {
+  string job_id = 1; // GPU node 產生的唯一任務 ID
+  string status_message = 2; // 初始狀態描述，e.g., "ACCEPTED" 或 "REJECTED"
+  bool accepted = 3; // 是否成功接受任務
+}
+
+service BorrowGPU {
+  // Control node 向 GPU node 提交一個新的計算任務
+  rpc SubmitJob (JobRequest) returns (JobResponse);
+}

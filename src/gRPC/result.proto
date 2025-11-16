@@ -1,0 +1,24 @@
+message ResultRequest {
+  string job_id = 1; 
+}
+
+message FinalResult {
+  string job_id = 1;
+  string final_status = 2; // "SUCCESS", "FAILURE", "TIMEOUT"
+  string error_message = 3; // 如果失敗，包含錯誤訊息
+  repeated ResultFile result_files = 4; // 最終產生的文件列表
+}
+
+message ResultFile {
+  string file_name = 1; // 原始檔案名稱
+  int64 file_size = 2; // 檔案大小 (bytes)
+  string download_url = 3; // 檔案的下載連結 (e.g., S3 URL, 專屬 HTTP URL)
+  string checksum = 4; // 檔案的 SHA256 校驗碼 (確保完整性)
+}
+
+service BorrowGPU {
+  // ... (SubmitJob, StreamProgress)
+
+  // 獲取已完成任務的最終結果，主要是下載連結和狀態
+  rpc GetFinalResult (ResultRequest) returns (FinalResult); 
+}

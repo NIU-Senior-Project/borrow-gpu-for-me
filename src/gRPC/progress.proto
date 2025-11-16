@@ -1,0 +1,22 @@
+message ProgressRequest {
+  string job_id = 1; // 欲追蹤的任務 ID
+}
+
+message ProgressUpdate {
+  string job_id = 1; 
+  int64 timestamp = 2; // 訊息時間戳
+  string log_output = 3; // 來自 shell script 輸出的實時日誌行
+  string current_status = 4; // e.g., "RUNNING", "DOWNLOADING_IMAGE", "FINISHING"
+  double progress_percentage = 5; // 0.0 到 100.0 (如果任務可量化)
+  int64 elapsed_time_seconds = 6; 
+  // 監控數據
+  double gpu_utilization = 7; // GPU 使用率 (%)
+  double gpu_temperature_c = 8; // GPU 溫度 (°C)
+}
+
+service BorrowGPU {
+  // ... (SubmitJob)
+
+  // Control node 訂閱特定任務的實時進度更新和日誌
+  rpc StreamProgress (ProgressRequest) returns (stream ProgressUpdate); 
+}
