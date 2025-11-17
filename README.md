@@ -31,3 +31,13 @@
     # 瀏覽並借用 GPU 資源
     borrow-gpu-for-me --list
     ```
+
+## 開發者指南
+
+執行單元測試
+
+執行前需要先編譯專案，請參考上方的使用說明。
+
+```bash
+ctest --test-dir build --output-on-failure
+```
