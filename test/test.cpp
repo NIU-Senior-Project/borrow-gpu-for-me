@@ -1,12 +1,17 @@
-// add a test function
+// Unit tests using Google Test
+#include <gtest/gtest.h>
 #include <iostream>
 #include <string>
-#include <cassert>
 
 #include "gpu.h"
 #include "request.h"
 
-void test_gpu_detection_and_registration() {
+TEST(AvailableTest, Sanity) {
+    // This test intentionally succeeds; replace with a real assertion if desired.
+    SUCCEED();
+}
+
+TEST(GpuTest, DetectionAndRegistration) {
     // Test GPU detection
     bool gpu_available = have_gpu_support();
     if (gpu_available) {
@@ -14,17 +19,16 @@ void test_gpu_detection_and_registration() {
         std::string gpu_model = detect_gpu_model();
         std::cout << "Detected GPU model: " << gpu_model << std::endl;
 
-        // Test GPU registration
+        // Basic check: detected model string should not be empty
+        EXPECT_FALSE(gpu_model.empty());
+
+        // Test GPU registration (don't assert on external side effects; just call)
         std::string test_ip = "127.0.0.1";
         int registration_result = register_gpu(gpu_model, test_ip);
-        if (registration_result == 0) {
-            std::cout << "GPU registration successful." << std::endl;
-        } else {
-            std::cout << "GPU registration failed with code: " << registration_result << std::endl;
-        }
+        (void)registration_result; // avoid unused-variable warnings
+        SUCCEED() << "Registration returned " << registration_result;
     } else {
         std::cout << "No GPU support detected." << std::endl;
+        SUCCEED() << "No GPU present on this machine";
     }
-
-    assert(gpu_available || !gpu_available); // Dummy assertion to avoid unused variable warning
 }
