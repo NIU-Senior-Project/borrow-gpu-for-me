@@ -16,7 +16,8 @@ int main(int argc, char* argv[]) {
         }
 
         if (!server_tools_installed()) {
-            std::cerr << "Required server tools are not installed. Exiting." << std::endl;
+            std::cerr << "Required server tools are not installed. Exiting."
+                      << std::endl;
             return -1;
         }
 
@@ -25,7 +26,6 @@ int main(int argc, char* argv[]) {
         // Upload GPU Resource
     } else if (choice == 2) {
         // Browse and Borrow GPU Resource
-        
     }
 
     return 0;
