@@ -4,3 +4,6 @@
 
 bool have_gpu_support();
 std::string detect_gpu_model();
+
+std::string get_check_gpu_command();
+std::string get_detect_gpu_command();
