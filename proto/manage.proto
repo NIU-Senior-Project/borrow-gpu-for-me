@@ -1,0 +1,6 @@
+message RegisterNodeRequest {
+  string node_id = 1; // GPU node 的唯一識別碼
+  string node_address = 2; // GPU node 的網路地址 (e.g., "192.168.1.100:8080")
+  string gpu_model = 3; // GPU 型號 (e.g., "RTX 4090")
+  int32 gpu_memory_mb = 4; // GPU 記憶體大小
+}
