@@ -103,3 +103,89 @@ int view_online_gpus(std::string manager_ip) {
 
     return 0;
 }
+
+// 簡單的 JSON 字串跳脫函式，避免 script 裡的換行或引號把 JSON 弄壞
+std::string escape_json(const std::string& s) {
+    std::ostringstream o;
+    for (char c : s) {
+        if (c == '"') o << "\\\"";
+        else if (c == '\\') o << "\\\\";
+        else if (c == '\b') o << "\\b";
+        else if (c == '\f') o << "\\f";
+        else if (c == '\n') o << "\\n";
+        else if (c == '\r') o << "\\r";
+        else if (c == '\t') o << "\\t";
+        else o << c;
+    }
+    return o.str();
+}
+
+int send_job(std::string manager_ip, std::string job_script, std::string node, std::string container = "nvidia/cuda:12.2.0-base-ubuntu22.04") {
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0) {
+        std::cerr << "Failed to create socket.\n";
+        return -1;
+    }
+
+    sockaddr_in manager_addr{};
+    manager_addr.sin_family = AF_INET;
+    manager_addr.sin_port = htons(8080); // 假設 Manager 監聽 8080 port
+
+    if (inet_pton(AF_INET, manager_ip.c_str(), &manager_addr.sin_addr) <= 0) {
+        std::cerr << "Invalid Manager IP address.\n";
+        close(sock);
+        return -1;
+    }
+
+    if (connect(sock, reinterpret_cast<sockaddr*>(&manager_addr), sizeof(manager_addr)) < 0) {
+        std::cerr << "Failed to connect to Manager at " << manager_ip << ":8080\n";
+        close(sock);
+        return -1;
+    }
+
+    // 建立 JSON Body
+    std::ostringstream body;
+    body << "{\n"
+         << "  \"target_node\": \"" << node << "\",\n"
+         << "  \"container\": \"" << container << "\",\n"
+         << "  \"script\": \"" << escape_json(job_script) << "\"\n"
+         << "}";
+    std::string body_str = body.str();
+
+    // 建構 HTTP POST 請求 (假設我們在 Manager 開一個 /submit_job 的 API)
+    std::ostringstream request;
+    request << "POST /submit_job HTTP/1.1\r\n"
+            << "Host: " << manager_ip << ":8080\r\n"
+            << "Content-Type: application/json\r\n"
+            << "Content-Length: " << body_str.size() << "\r\n"
+            << "Connection: close\r\n\r\n"
+            << body_str;
+
+    std::string req_str = request.str();
+
+    // 發送請求
+    if (send(sock, req_str.data(), req_str.size(), 0) != static_cast<ssize_t>(req_str.size())) {
+        std::cerr << "Failed to send job request.\n";
+        close(sock);
+        return -1;
+    }
+
+    // 接收 Response
+    std::string response;
+    char buffer[4096];
+    ssize_t bytesRead;
+    while ((bytesRead = recv(sock, buffer, sizeof(buffer) - 1, 0)) > 0) {
+        buffer[bytesRead] = '\0';
+        response.append(buffer);
+    }
+    close(sock);
+
+    // 檢查 HTTP Response Code
+    if (response.find("200 OK") != std::string::npos) {
+        std::cout << "[SUCCESS] Job successfully submitted to manager for node: " << node << "\n";
+        return 0;
+    } else {
+        std::cerr << "[ERROR] Job submission failed. Server response:\n" << response << "\n";
+        return -1;
+    }
+}

@@ -5,6 +5,7 @@
 #include "gpu.h"
 #include "tool.h"
 #include "register.h"
+#include "request.h"
 
 int main(int argc, char* argv[]) {
     std::cout << "Select Mode:\n";
