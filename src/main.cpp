@@ -40,8 +40,14 @@ int main(int argc, char* argv[]) {
         register_node(manager_ip, 8080, node_ip, gpu_model);
 
     } else if (choice == 2) {
-        // Browse and Borrow GPU Resource
-        std::cout << "Borrow functionality not yet implemented.\n";
+        std::string manager_ip;
+        std::cout << "Enter Node Manager IP (e.g., 127.0.0.1): ";
+        std::cin >> manager_ip;
+
+        view_online_gpus(manager_ip);
+    } else {
+        std::cerr << "Invalid choice. Exiting.\n";
+        return 1;
     }
 
     return 0;
