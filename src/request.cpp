@@ -183,6 +183,13 @@ int send_job(std::string manager_ip, std::string job_script, std::string node, s
     // 檢查 HTTP Response Code
     if (response.find("200 OK") != std::string::npos) {
         std::cout << "[SUCCESS] Job successfully submitted to manager for node: " << node << "\n";
+        auto headerEnd = response.find("\r\n\r\n");
+        if (headerEnd != std::string::npos) {
+            std::string body = response.substr(headerEnd + 4);
+            std::cout << "\n=== Remote Execution Result ===\n" 
+                      << body 
+                      << "\n===============================\n";
+        }
         return 0;
     } else {
         std::cerr << "[ERROR] Job submission failed. Server response:\n" << response << "\n";

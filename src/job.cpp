@@ -77,16 +77,27 @@ std::string run_docker_job(const std::string& container, const std::string& scri
         char buffer[1024];
         ssize_t bytesRead;
 
-        // 不斷從 pipe 讀取子程序的輸出，直到子程序結束
         while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer) - 1)) > 0) {
             buffer[bytesRead] = '\0';
             output += buffer;
         }
         close(pipefd[0]);
 
-        // 等待子程序完全結束，避免產生殭屍程序 (Zombie Process)
         int status;
         waitpid(pid, &status, 0);
+
+        if (WIFEXITED(status)) {
+            int exitCode = WEXITSTATUS(status);
+            if (exitCode != 0) {
+                // 如果 Exit Code 不是 0，代表執行失敗，我們在輸出前面加上明顯的警告
+                output = "[ERROR] Container exited with code " + std::to_string(exitCode) + "\n" +
+                         "--- Container Output ---\n" + output;
+            }
+        } else if (WIFSIGNALED(status)) {
+            int sig = WTERMSIG(status);
+            output = "[ERROR] Container killed by signal " + std::to_string(sig) + "\n" +
+                     "--- Container Output ---\n" + output;
+        }
 
         return output;
     }
@@ -169,6 +180,7 @@ void start_job_listener(int port) {
             // 2. 呼叫 Docker 執行並取得結果
             std::string execution_result = run_docker_job(container, script);
 
+            std::cout << "--- Execution Output ---\n" << execution_result << "\n------------------------\n";
             std::cout << "[JOB FINISHED]\n";
 
             // 3. 將執行結果包裝成 HTTP 200 OK 回傳給 Manager
