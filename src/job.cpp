@@ -58,15 +58,15 @@ std::string run_docker_job(const std::string& container, const std::string& scri
 
         // 執行指令: docker run --rm --gpus all <container> /bin/bash -c "<script>"
         // docker + nvidia gpu
-
+        /*
         execlp("docker",
                "docker", "run", "--rm", "--gpus", "all",
                container.c_str(),
                "/bin/bash", "-c", script.c_str(),
                nullptr);
-
+        */
         // podman + amd gpu
-        /*
+        // /*
         execlp("podman",
                "podman", "run", "--rm",
                "--device", "/dev/kfd",
@@ -74,7 +74,7 @@ std::string run_docker_job(const std::string& container, const std::string& scri
                container.c_str(),
                "/bin/bash", "-c", script.c_str(),
                nullptr);
-        */
+        // */
         // 如果 execlp 成功，它會替換掉當前程序，下面的程式碼永遠不會執行。
         // 如果執行到這裡，代表 Docker 啟動失敗（例如沒安裝 Docker）。
         std::cerr << "Failed to execute docker/podman command.\n";

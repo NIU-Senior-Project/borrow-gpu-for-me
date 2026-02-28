@@ -70,8 +70,10 @@ int main(int argc, char* argv[]) {
         std::getline(std::cin, script);
 
         // 4. 送出任務
-        send_job(manager_ip, script, target_ip, "nvidia/cuda:12.2.0-base-ubuntu22.04");
-
+        // if nvidia gpu
+        // send_job(manager_ip, script, target_ip, "nvidia/cuda:12.2.0-base-ubuntu22.04");
+        // if amd gpu
+        send_job(manager_ip, script, target_ip, "docker.io/rocm/dev-ubuntu-24.04:7.2");
     } else {
         std::cerr << "Invalid choice. Exiting.\n";
         return 1;
