@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <fstream>
 
 #include "gpu.h"
 #include "tool.h"
@@ -60,21 +61,27 @@ int main(int argc, char* argv[]) {
         std::cout << "\nEnter target Node IP from the list above: ";
         std::cin >> target_ip;
 
-        // 清除輸入緩衝區，為接下來的 getline 準備
+        // Clear input buffer for getline
         std::cin.ignore(10000, '\n');
 
-        // 3. 輸入要執行的 Script
-        // 這裡為了簡單，先假設讀取單行指令 (例如 "nvidia-smi" 或 "python3 train.py")
-        std::string script;
-        std::cout << "Enter the command/script to execute on the remote GPU:\n> ";
-        std::getline(std::cin, script);
+        // 3. 讀取腳本檔案
+        std::string script_path;
+        std::cout << "Enter the path to the job script file:\n> ";
+        std::getline(std::cin, script_path);
+
+        std::ifstream script_file(script_path);
+        if (!script_file.is_open()) {
+            std::cerr << "[ERROR] Failed to open script file: " << script_path << "\n";
+            return 1;
+        }
+
+        std::stringstream buffer;
+        buffer << script_file.rdbuf();
+        std::string script = buffer.str();
 
         // 4. 送出任務
-        // if nvidia gpu
-        // send_job(manager_ip, script, target_ip, "nvidia/cuda:12.2.0-base-ubuntu22.04");
-        // if amd gpu
         send_job(manager_ip, script, target_ip, "docker.io/rocm/dev-ubuntu-24.04:7.2");
-    } else {
+    }  else {
         std::cerr << "Invalid choice. Exiting.\n";
         return 1;
     }

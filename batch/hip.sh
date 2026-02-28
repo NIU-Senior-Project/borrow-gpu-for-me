@@ -1,13 +1,14 @@
 #!/bin/env bash
 
+apt update
+apt install -y cmake git
+
 git clone https://github.com/Young-TW/rocOdyssey.git
 
 cd rocOdyssey || exit
 
-apt install -y cmake
-
-cmake -B build
+cmake -B build -DODYSSEY_BACKEND=HIP -DCMAKE_BUILD_TYPE=Release
 
 cmake --build build
 
-./build/rocOdyssey
+./build/exec
