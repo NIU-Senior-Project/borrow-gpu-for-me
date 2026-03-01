@@ -51,6 +51,8 @@ std::string run_docker_job_async(const std::string& container, const std::string
             // 第三次 fork 實際執行容器，讓父程序可以等待並寫入 .done 標記
             pid_t pid3 = fork();
             if (pid3 == 0) {
+                // podman + ROCm
+                /*
                 execlp("podman",
                        "podman", "run", "--rm",
                        "--device", "/dev/kfd",
@@ -59,12 +61,22 @@ std::string run_docker_job_async(const std::string& container, const std::string
                        "/bin/bash", "-c", script.c_str(),
                        nullptr);
                 std::cerr << "[ERROR] Failed to execute podman command.\n";
+                */
+                // docker + CUDA
+                // /*
+                execlp("docker",
+                       "docker", "run", "--rm",
+                       "--gpus", "all",
+                       container.c_str(),
+                       "/bin/bash", "-c", script.c_str(),
+                       nullptr);
+                // */
                 exit(1);
             } else {
                 int status;
                 waitpid(pid3, &status, 0);
                 std::cout << "\n[INFO] Container exited.\n";
-                
+
                 // 容器執行完畢，建立標記檔案
                 int fd_done = open(done_file.c_str(), O_WRONLY | O_CREAT, 0644);
                 if (fd_done != -1) close(fd_done);
