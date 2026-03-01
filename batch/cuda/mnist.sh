@@ -12,7 +12,6 @@ source $HOME/.local/bin/env
 cd MNIST || exit
 
 uv venv
-uv pip install torch torchvision torchaudio \
-    --index-url https://download.pytorch.org/whl/rocm6.4
+uv pip install torch torchvision torchaudio
 
 uv run src/main.py
