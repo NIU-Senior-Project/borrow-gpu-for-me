@@ -4,7 +4,7 @@
 #include <string>
 
 std::string get_pull_command(std::string container) {
-    return "docker pull " + container + " > /dev/null 2>&1";
+    return "podman pull " + container + " > /dev/null 2>&1";
 }
 
 int pull_container(std::string container) {
@@ -18,7 +18,7 @@ int pull_container(std::string container) {
 
 std::string get_launch_command(std::string container) {
     std::string command =
-        "docker run -d " + container + " > /dev/null 2>&1 \\ ";
+        "podman run -d " + container + " > /dev/null 2>&1 \\ ";
     // command += "--device /dev/kfd --device /dev/dri "; // AMD GPU support
     command += "--gpus all ";  // NVIDIA GPU support
     return command;

@@ -23,7 +23,7 @@ std::string generate_job_id() {
 }
 
 // 非同步執行 Podman，並在結束時建立 .done 檔案
-std::string run_docker_job_async(const std::string& container, const std::string& script) {
+std::string run_podman_job_async(const std::string& container, const std::string& script) {
     std::string job_id = generate_job_id();
     std::string output_file = "/tmp/" + job_id + ".out";
     std::string done_file = "/tmp/" + job_id + ".done";
@@ -62,10 +62,10 @@ std::string run_docker_job_async(const std::string& container, const std::string
                        nullptr);
                 std::cerr << "[ERROR] Failed to execute podman command.\n";
                 */
-                // docker + CUDA
+                // podman + CUDA
                 // /*
-                execlp("docker",
-                       "docker", "run", "--rm",
+                execlp("podman",
+                       "podman", "run", "--rm",
                        "--gpus", "all",
                        container.c_str(),
                        "/bin/bash", "-c", script.c_str(),
@@ -163,7 +163,7 @@ void start_job_listener(int port) {
                     pos = 0;
                     while ((pos = script.find("\\\"", pos)) != std::string::npos) { script.replace(pos, 2, "\""); pos += 1; }
 
-                    std::string job_id = run_docker_job_async(container, script);
+                    std::string job_id = run_podman_job_async(container, script);
                     std::cout << "\n[NEW JOB RECEIVED] Assigned Job ID: " << job_id << "\n";
 
                     std::ostringstream json_response;

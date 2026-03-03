@@ -11,7 +11,7 @@ bool check_installed(std::string tool_name) {
 
 bool server_tools_installed() {
     // Check for all required tools on the server
-    return check_installed("docker") && check_installed("ssh") &&
+    return check_installed("podman") && check_installed("ssh") &&
            check_installed("scp");
 }
 
