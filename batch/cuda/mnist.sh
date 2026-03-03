@@ -11,7 +11,6 @@ source $HOME/.local/bin/env
 
 cd MNIST || exit
 
-uv venv
-uv pip install torch torchvision torchaudio
+uv sync
 
 uv run src/main.py
