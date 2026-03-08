@@ -9,34 +9,10 @@
 #include "register.h"
 #include "request.h"
 #include "job.h"
-
-std::map<std::string, std::string> load_config(const std::string& filename) {
-    std::map<std::string, std::string> config;
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        return config;
-    }
-
-    std::string line;
-    while (std::getline(file, line)) {
-        if (line.empty() || line[0] == '#') {
-            continue;
-        }
-        auto delimiter_pos = line.find('=');
-        if (delimiter_pos != std::string::npos) {
-            std::string key = line.substr(0, delimiter_pos);
-            std::string value = line.substr(delimiter_pos + 1);
-            config[key] = value;
-        }
-    }
-    return config;
-}
+#include "config.h"
 
 int main(int argc, char* argv[]) {
-    // Read configuration at startup
     auto config = load_config(".config");
-    std::string default_manager_ip = config.count("MANAGER_IP") ? config["MANAGER_IP"] : "";
-    std::string default_node_ip = config.count("NODE_IP") ? config["NODE_IP"] : "";
 
     std::cout << "Select Mode:\n";
     std::cout << "1. Upload GPU Resource (Register & Listen)\n";
@@ -62,22 +38,8 @@ int main(int argc, char* argv[]) {
             return -1;
         }
 
-        std::string manager_ip = default_manager_ip;
-        std::string node_ip = default_node_ip;
-
-        if (manager_ip.empty()) {
-            std::cout << "Enter Node Manager IP (e.g., 127.0.0.1): ";
-            std::cin >> manager_ip;
-        } else {
-            std::cout << "[INFO] Using Manager IP from config: " << manager_ip << "\n";
-        }
-
-        if (node_ip.empty()) {
-            std::cout << "Enter this Node's IP (for others to connect): ";
-            std::cin >> node_ip;
-        } else {
-            std::cout << "[INFO] Using Node IP from config: " << node_ip << "\n";
-        }
+        std::string manager_ip = get_value(config, "MANAGER_IP");
+        std::string node_ip = get_value(config, "NODE_IP");
 
         if (register_node(manager_ip, 8080, node_ip, "unknown_gpu_model")) {
             start_job_listener(8081);
@@ -87,14 +49,7 @@ int main(int argc, char* argv[]) {
         }
 
     } else if (choice == 2) {
-        std::string manager_ip = default_manager_ip;
-
-        if (manager_ip.empty()) {
-            std::cout << "Enter Node Manager IP (e.g., 127.0.0.1): ";
-            std::cin >> manager_ip;
-        } else {
-            std::cout << "[INFO] Using Manager IP from config: " << manager_ip << "\n";
-        }
+        std::string manager_ip = get_value(config, "MANAGER_IP");
 
         view_online_gpus(manager_ip);
 
@@ -118,7 +73,9 @@ int main(int argc, char* argv[]) {
         buffer << script_file.rdbuf();
         std::string script = buffer.str();
 
-        send_job(manager_ip, script, target_ip, "docker.io/rocm/dev-ubuntu-24.04:7.2");
+        std::string container_image = get_config_value(config, "CONTAINER_IMAGE", "docker.io/rocm/dev-ubuntu-24.04:7.2");
+
+        send_job(manager_ip, script, target_ip, container_image);
     } else {
         std::cerr << "Invalid choice. Exiting.\n";
         return 1;
