@@ -1,9 +1,0 @@
-Card Series
-Card Model
-Card Vendor
-Card SKU
-Subsystem ID
-Device Rev
-Node ID
-GUID
-GFX Version
