@@ -13,3 +13,5 @@ dist/
 target/
 
 gpu_model.txt
+
+.config
