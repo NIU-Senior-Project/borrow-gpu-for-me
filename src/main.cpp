@@ -19,18 +19,20 @@ int main(int argc, char* argv[]) {
     if (!(std::cin >> choice)) return 1;
 
     if (choice == 1) {
-        if (!have_gpu_support()) {
+        GpuVendor gpu_vendor = detect_gpu_vendor();
+        if (gpu_vendor == GpuVendor::UNKNOWN) {
             std::cerr << "No GPU support detected. Exiting.\n";
             return -1;
+        } else if (gpu_vendor == GpuVendor::NVIDIA) {
+            std::cout << "NVIDIA GPU detected.\n";
+        } else if (gpu_vendor == GpuVendor::AMD) {
+            std::cout << "AMD GPU detected.\n";
         }
 
         if (!server_tools_installed()) {
             std::cerr << "Required server tools are not installed. Exiting.\n";
             return -1;
         }
-
-        std::string gpu_model = detect_gpu_model();
-        std::cout << "Detected GPU Model: " << gpu_model << "\n";
 
         // 取得 Manager 與本機 Node 的 IP
         std::string manager_ip, node_ip;
@@ -40,7 +42,7 @@ int main(int argc, char* argv[]) {
         std::cin >> node_ip;
 
         // 註冊本機資源
-        if (register_node(manager_ip, 8080, node_ip, gpu_model)) {
+        if (register_node(manager_ip, 8080, node_ip, "unknown_gpu_model") ) {
             // 註冊成功後，啟動 Server 監聽 8081 Port 準備接任務！
             start_job_listener(8081); 
         } else {

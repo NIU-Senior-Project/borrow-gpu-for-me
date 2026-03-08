@@ -4,24 +4,18 @@
 #include <fstream>
 #include <string>
 
+#include "gpu.h"
+
 std::string get_check_nv_gpu_command() { return "nvidia-smi > /dev/null 2>&1"; }
 std::string get_check_amd_gpu_command() { return "rocm-smi > /dev/null 2>&1"; }
 
-
-bool have_gpu_support() {
-    int status = system(get_check_nv_gpu_command().c_str());
-    if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
-        return true;  // GPU is available
+GpuVendor detect_gpu_vendor() {
+    if (access("/dev/nvidiactl", F_OK) == 0) {
+        return GpuVendor::NVIDIA;
+    } else if (access("/dev/kfd", F_OK) == 0) {
+        return GpuVendor::AMD;
     }
-
-    if (WIFEXITED(status) && WEXITSTATUS(status) == 127) {
-        status = system(get_check_amd_gpu_command().c_str());
-        if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
-            return true;  // AMD GPU is available
-        }
-    }
-
-    return false;  // GPU is not available
+    return GpuVendor::UNKNOWN;
 }
 
 std::string get_detect_nv_gpu_command() {
