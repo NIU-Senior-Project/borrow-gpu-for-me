@@ -66,7 +66,8 @@ std::string run_podman_job_async(const std::string& container, const std::string
                 // /*
                 execlp("podman",
                        "podman", "run", "--rm",
-                       "--gpus", "all",
+                       "--security-opt", "label=disable",
+                       "--device", "nvidia.com/gpu=all",
                        container.c_str(),
                        "/bin/bash", "-c", script.c_str(),
                        nullptr);
