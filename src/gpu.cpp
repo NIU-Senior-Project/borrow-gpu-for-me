@@ -24,7 +24,7 @@ std::string get_detect_nv_gpu_command() {
 }
 
 std::string get_detect_amd_gpu_command() {
-    return "rocm-smi --showproductname | grep 'GPU' | awk -F ': ' '{print $2}' > gpu_model.txt";
+    return "rocm-smi --showproductname | awk -F 'Card Series:[[:space:]]*' '/Card Series/{print $2; exit}' > gpu_model.txt";
 }
 
 std::string detect_gpu_model() {
@@ -53,7 +53,7 @@ std::string detect_gpu_model() {
     if (vendor == GpuVendor::AMD) {
         std::string model = run_cmd(
             "rocm-smi --showproductname 2>/dev/null"
-            " | grep 'GPU' | awk -F ': ' '{print $2}'");
+            " | awk -F 'Card Series:[[:space:]]*' '/Card Series/{print $2; exit}'");
         if (!model.empty()) return model;
     }
 
