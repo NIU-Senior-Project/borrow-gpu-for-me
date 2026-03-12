@@ -25,7 +25,7 @@ std::string build_node_id(const std::string& gpu_model,
 
 int register_gpu(std::string gpu_model, std::string ip) {
     if (gpu_model.empty() || ip.empty()) {
-        std::cerr << "register_gpu failed: gpu_model/ip must not be empty"
+        std::cerr << "[ERROR] register_gpu failed: gpu_model/ip must not be empty"
                   << std::endl;
         return -1;
     }
@@ -48,7 +48,7 @@ int register_gpu(std::string gpu_model, std::string ip) {
 int view_online_gpus(std::string manager_ip) {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) {
-        std::cerr << "Failed to create socket.\n";
+        std::cerr << "[ERROR] Failed to create socket.\n";
         return -1;
     }
 
@@ -57,13 +57,13 @@ int view_online_gpus(std::string manager_ip) {
     manager_addr.sin_port = htons(8080); // 假設 Manager 監聽 8080 port
 
     if (inet_pton(AF_INET, manager_ip.c_str(), &manager_addr.sin_addr) <= 0) {
-        std::cerr << "Invalid Manager IP address.\n";
+        std::cerr << "[ERROR] Invalid Manager IP address.\n";
         close(sock);
         return -1;
     }
 
     if (connect(sock, reinterpret_cast<sockaddr*>(&manager_addr), sizeof(manager_addr)) < 0) {
-        std::cerr << "Failed to connect to Manager at " << manager_ip << ":8080\n";
+        std::cerr << "[ERROR] Failed to connect to Manager at " << manager_ip << ":8080\n";
         close(sock);
         return -1;
     }
@@ -78,7 +78,7 @@ int view_online_gpus(std::string manager_ip) {
 
     // 發送請求
     if (send(sock, req_str.data(), req_str.size(), 0) != static_cast<ssize_t>(req_str.size())) {
-        std::cerr << "Failed to send HTTP request.\n";
+        std::cerr << "[ERROR] Failed to send HTTP request.\n";
         close(sock);
         return -1;
     }
@@ -101,7 +101,7 @@ int view_online_gpus(std::string manager_ip) {
         std::cout << body << "\n";
         std::cout << "========================\n";
     } else {
-        std::cerr << "Invalid response from server.\n";
+        std::cerr << "[ERROR] Invalid response from server.\n";
         return -1;
     }
 
@@ -215,7 +215,7 @@ int send_job(std::string manager_ip, std::string job_script, std::string node, s
     }
 
     std::cout << "[SUCCESS] Job submitted! Job ID: " << job_id << "\n";
-    std::cout << "Waiting for execution to complete...\n";
+    std::cout << "[INFO] Waiting for execution to complete...\n";
 
     // Polling Loop
     while (true) {

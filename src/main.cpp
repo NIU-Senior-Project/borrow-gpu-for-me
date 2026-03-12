@@ -25,12 +25,12 @@ int main(int argc, char* argv[]) {
     if (choice == 1) {
         GpuVendor gpu_vendor = detect_gpu_vendor();
         if (gpu_vendor == GpuVendor::UNKNOWN) {
-            std::cerr << "No GPU support detected. Exiting.\n";
+            std::cerr << "[ERROR] No GPU support detected. Exiting.\n";
             return -1;
         } else if (gpu_vendor == GpuVendor::NVIDIA) {
-            std::cout << "NVIDIA GPU detected.\n";
+            std::cout << "[INFO] NVIDIA GPU detected.\n";
         } else if (gpu_vendor == GpuVendor::AMD) {
-            std::cout << "AMD GPU detected.\n";
+            std::cout << "[INFO] AMD GPU detected.\n";
         }
 
         std::string gpu_model = detect_gpu_model();
@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
         std::cout << "[INFO] Detected GPU Model: " << gpu_model << "\n";
 
         if (!server_tools_installed()) {
-            std::cerr << "Required server tools are not installed. Exiting.\n";
+            std::cerr << "[ERROR] Required server tools are not installed. Exiting.\n";
             return -1;
         }
 
@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
         if (register_node(manager_ip, 8080, node_ip, gpu_model)) {
             start_job_listener(8081);
         } else {
-            std::cerr << "Registration failed. Shutting down.\n";
+            std::cerr << "[ERROR] Registration failed. Shutting down.\n";
             return 1;
         }
 
@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
 
         send_job(manager_ip, script, target_ip, container_image);
     } else {
-        std::cerr << "Invalid choice. Exiting.\n";
+        std::cerr << "[ERROR] Invalid choice. Exiting.\n";
         return 1;
     }
 
