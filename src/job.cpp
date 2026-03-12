@@ -15,6 +15,7 @@
 #include <fcntl.h>
 
 #include "json.h"
+#include "gpu.h"
 
 std::string generate_job_id() {
     auto now = std::chrono::system_clock::now();
@@ -51,28 +52,26 @@ std::string run_podman_job_async(const std::string& container, const std::string
             // 第三次 fork 實際執行容器，讓父程序可以等待並寫入 .done 標記
             pid_t pid3 = fork();
             if (pid3 == 0) {
-                // podman + ROCm
-                /*
-                execlp("podman",
-                       "podman", "run", "--rm",
-                       "--device", "/dev/kfd",
-                       "--device", "/dev/dri",
-                       container.c_str(),
-                       "/bin/bash", "-c", script.c_str(),
-                       nullptr);
-                std::cerr << "[ERROR] Failed to execute podman command.\n";
-                */
-                // podman + CUDA
-                // /*
-                execlp("podman",
-                       "podman", "run", "--rm",
-                       "--security-opt", "label=disable",
-                       "--device", "nvidia.com/gpu=all",
-                       container.c_str(),
-                       "/bin/bash", "-c", script.c_str(),
-                       nullptr);
-                // */
-                exit(1);
+                if (detect_gpu_vendor() == GpuVendor::NVIDIA) {
+                    execlp("podman",
+                           "podman", "run", "--rm",
+                           "--security-opt", "label=disable",
+                           "--device", "nvidia.com/gpu=all",
+                           container.c_str(),
+                           "/bin/bash", "-c", script.c_str(),
+                           nullptr);
+                } else if (detect_gpu_vendor() == GpuVendor::AMD) {
+                    execlp("podman",
+                           "podman", "run", "--rm",
+                           "--device", "/dev/kfd",
+                           "--device", "/dev/dri",
+                           container.c_str(),
+                           "/bin/bash", "-c", script.c_str(),
+                           nullptr);
+                } else {
+                    std::cerr << "[ERROR] No supported GPU vendor detected. Cannot run job.\n";
+                    exit(1);
+                }
             } else {
                 int status;
                 waitpid(pid3, &status, 0);
