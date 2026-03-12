@@ -33,6 +33,10 @@ int main(int argc, char* argv[]) {
             std::cout << "AMD GPU detected.\n";
         }
 
+        std::string gpu_model = detect_gpu_model();
+
+        std::cout << "[INFO] Detected GPU Model: " << gpu_model << "\n";
+
         if (!server_tools_installed()) {
             std::cerr << "Required server tools are not installed. Exiting.\n";
             return -1;
@@ -41,7 +45,7 @@ int main(int argc, char* argv[]) {
         std::string manager_ip = get_value(config, "MANAGER_IP");
         std::string node_ip = get_value(config, "NODE_IP");
 
-        if (register_node(manager_ip, 8080, node_ip, "unknown_gpu_model")) {
+        if (register_node(manager_ip, 8080, node_ip, gpu_model)) {
             start_job_listener(8081);
         } else {
             std::cerr << "Registration failed. Shutting down.\n";
