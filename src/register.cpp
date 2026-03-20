@@ -35,6 +35,8 @@ bool register_node(const std::string& manager_ip, int manager_port, const std::s
         return false;
     }
 
+    int gpu_memory_mb = detect_gpu_memory_mb();
+
     // 建立 JSON 格式的 Body
     // 你的 Server 有實作 JSON parser 取出 "ip" 欄位，我們順便把 gpu_model 傳過去
     std::ostringstream body;
