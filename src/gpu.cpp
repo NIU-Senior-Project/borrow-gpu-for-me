@@ -16,22 +16,20 @@ GpuVendor detect_gpu_vendor() {
     return GpuVendor::UNKNOWN;
 }
 
-std::string detect_gpu_model() {
-    auto run_cmd = [](const std::string& cmd) -> std::string {
-        FILE* pipe = popen(cmd.c_str(), "r");
-        if (!pipe) return "";
-        char buf[256];
-        std::string result;
-        while (fgets(buf, sizeof(buf), pipe)) {
-            result += buf;
-        }
-        pclose(pipe);
-        // trim trailing newline
-        while (!result.empty() && (result.back() == '\n' || result.back() == '\r'))
-            result.pop_back();
-        return result;
-    };
+static std::string run_cmd(const std::string& cmd) {
+    FILE* pipe = popen(cmd.c_str(), "r");
+    if (!pipe) return "";
+    char buf[256];
+    std::string result;
+    while (fgets(buf, sizeof(buf), pipe))
+        result += buf;
+    pclose(pipe);
+    while (!result.empty() && (result.back() == '\n' || result.back() == '\r'))
+        result.pop_back();
+    return result;
+}
 
+std::string detect_gpu_model() {
     GpuVendor vendor = detect_gpu_vendor();
 
     if (vendor == GpuVendor::NVIDIA) {
@@ -47,4 +45,30 @@ std::string detect_gpu_model() {
     }
 
     return "Unknown GPU";
+}
+
+int detect_gpu_memory_mb() {
+    GpuVendor vendor = detect_gpu_vendor();
+
+    if (vendor == GpuVendor::NVIDIA) {
+        std::string mem_str = run_cmd(
+            "nvidia-smi --query-gpu=memory.total --format=csv,noheader 2>/dev/null");
+        try {
+            return std::stoi(mem_str);
+        } catch (...) {
+            return 0;
+        }
+    }
+    if (vendor == GpuVendor::AMD) {
+        std::string mem_str = run_cmd(
+            "rocm-smi --showmeminfo vram 2>/dev/null"
+            " | awk '/VRAM Total Memory/{print int($NF / 1048576); exit}'");
+        try {
+            return std::stoi(mem_str);
+        } catch (...) {
+            return 0;
+        }
+    }
+
+    return 0;
 }

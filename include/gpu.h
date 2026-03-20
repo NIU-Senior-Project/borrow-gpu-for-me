@@ -6,3 +6,4 @@ enum class GpuVendor { NVIDIA, AMD, UNKNOWN };
 
 GpuVendor detect_gpu_vendor();
 std::string detect_gpu_model();
+int detect_gpu_memory_mb();
