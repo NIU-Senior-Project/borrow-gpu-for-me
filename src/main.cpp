@@ -34,8 +34,10 @@ int main(int argc, char* argv[]) {
         }
 
         std::string gpu_model = detect_gpu_model();
+        int gpu_memory_mb = detect_gpu_memory_mb();
 
         std::cout << "[INFO] Detected GPU Model: " << gpu_model << "\n";
+        std::cout << "[INFO] Detected GPU Memory: " << gpu_memory_mb << " MB\n";
 
         if (!server_tools_installed()) {
             std::cerr << "[ERROR] Required server tools are not installed. Exiting.\n";

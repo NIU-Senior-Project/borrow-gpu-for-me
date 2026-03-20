@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "gpu.h"
 
 // 發送註冊請求到 Node Manager
 bool register_node(const std::string& manager_ip, int manager_port, const std::string& node_ip, const std::string& gpu_model) {
@@ -37,7 +38,10 @@ bool register_node(const std::string& manager_ip, int manager_port, const std::s
     // 建立 JSON 格式的 Body
     // 你的 Server 有實作 JSON parser 取出 "ip" 欄位，我們順便把 gpu_model 傳過去
     std::ostringstream body;
-    body << "{\"ip\": \"" << node_ip << "\", \"gpu_model\": \"" << gpu_model << "\"}";
+    body << "{\"ip\": \"" << node_ip
+         << "\", \"gpu_model\": \"" << gpu_model
+         << "\", \"gpu_memory_mb\": " << gpu_memory_mb
+         << "}";
     std::string body_str = body.str();
 
     // 建構 HTTP POST 請求
