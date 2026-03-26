@@ -1,6 +1,6 @@
-# Borrow-GPU-For-Me
+# borrow-gpu-for-me
 
-`Borrow-GPU-For-Me` 是一個以 C++ CLI 實作的 GPU 借用原型，目標是讓節點可以註冊可借出的 GPU，並讓借用端提交腳本到目標節點執行。
+`borrow-gpu-for-me` 是一個以 C++ CLI 實作的 GPU 借用原型，目標是讓節點可以註冊可借出的 GPU，並讓借用端提交腳本到目標節點執行。
 
 ## 目前進度（2026-03-09）
 
@@ -120,6 +120,22 @@ ctest --test-dir build --output-on-failure
 - `GET /status?id=<job_id>`：查詢任務輸出與完成狀態
 
 若你的後端 API 格式不同，請同步調整 `src/register.cpp`、`src/request.cpp` 與 `src/job.cpp`。
+
+## 設定檔
+
+程式會從執行目錄下的 `.config` 檔案載入設定。以下是範例內容：
+
+```
+MANAGER_IP=127.0.0.1
+NODE_IP=127.0.0.1
+CONTAINER_IMAGE=docker.io/rocm/dev-ubuntu-24.04:7.2
+```
+
+- `MANAGER_IP`: Node Manager 的 IP 位址。
+- `NODE_IP`: 本機節點的 IP 位址，用於註冊和接收任務。
+- `CONTAINER_IMAGE`: 執行 GPU 任務時使用的預設容器映像。
+
+請確保在執行程式前建立並配置此檔案。
 
 ## 專案結構
 
