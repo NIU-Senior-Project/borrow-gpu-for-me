@@ -1,5 +1,6 @@
 #include "register.h"
 
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -38,12 +39,26 @@ bool register_node(const std::string& manager_ip, int manager_port, const std::s
 
     int gpu_memory_mb = detect_gpu_memory_mb();
 
+    // 歸屬與價格從環境變數讀取（與 AUTH_TOKEN 一致的做法）：
+    //   OWNER     公開顯示名稱
+    //   OWNER_KEY 擁有權秘密（之後改價/註銷須帶相同值）
+    //   PRICE     上架價格（每小時）
+    const char* ownerEnv = std::getenv("OWNER");
+    const char* ownerKeyEnv = std::getenv("OWNER_KEY");
+    const char* priceEnv = std::getenv("PRICE");
+    const std::string owner = ownerEnv ? ownerEnv : "";
+    const std::string owner_key = ownerKeyEnv ? ownerKeyEnv : "";
+    double price = 0.0;
+    if (priceEnv) { try { price = std::stod(priceEnv); } catch (...) { price = 0.0; } }
+
     // 建立 JSON 格式的 Body
-    // 你的 Server 有實作 JSON parser 取出 "ip" 欄位，我們順便把 gpu_model 傳過去
     std::ostringstream body;
     body << "{\"ip\": \"" << node_ip
          << "\", \"gpu_model\": \"" << gpu_model
          << "\", \"gpu_memory_mb\": " << gpu_memory_mb
+         << ", \"owner\": \"" << owner
+         << "\", \"owner_key\": \"" << owner_key
+         << "\", \"price\": " << price
          << "}";
     std::string body_str = body.str();
 

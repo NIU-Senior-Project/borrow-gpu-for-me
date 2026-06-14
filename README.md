@@ -151,6 +151,19 @@ export AUTH_TOKEN="$(head -c 32 /dev/urandom | base64)"
 - 客戶端：所有對 Manager／節點的請求都會自動帶上該標頭。
 - 若未設定 `AUTH_TOKEN`，程式會印出安全警告並**停用認證**（僅供本機開發）。
 
+### 節點歸屬與價格（提供端）
+
+註冊（模式 1）時會額外從環境變數帶入歸屬與價格資訊：
+
+```bash
+export OWNER="alice"            # 公開顯示名稱
+export OWNER_KEY="alice-secret" # 擁有權秘密，日後改價/註銷須一致
+export PRICE="2.50"             # 上架價格（每小時）
+```
+
+之後只有持有相同 `OWNER_KEY` 的人能對該節點改價／更新狀態／註銷；未設定
+`OWNER_KEY` 則該節點不設保護（相容／dev）。
+
 > ⚠️ **公開部署警告**：Bearer Token 走明文 HTTP 會被竊聽／重放。對外公開時，
 > 請在 Manager／節點前面擺一台 TLS 反向代理（如 nginx／caddy）做 HTTPS 終結，
 > 不要直接把 8080／8081 暴露在公網。
