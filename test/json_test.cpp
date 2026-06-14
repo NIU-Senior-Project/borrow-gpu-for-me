@@ -21,3 +21,16 @@ TEST(JsonEscapeTest, UnescapesTabAndBackslash) {
     EXPECT_EQ(unescape_json("a\\\\b"), "a\\b");
     EXPECT_EQ(unescape_json("line1\\nline2"), "line1\nline2");
 }
+
+TEST(QueryParamTest, ExtractsIdRegardlessOfPosition) {
+    EXPECT_EQ(query_param("/status?id=job_1", "id"), "job_1");
+    EXPECT_EQ(query_param("/status?node=10.0.0.1&id=job_1", "id"), "job_1");
+    EXPECT_EQ(query_param("/status?id=job_1&extra=1", "id"), "job_1");
+}
+
+TEST(QueryParamTest, KeyBoundaryAndMissing) {
+    // 不可把 "uuid" 當成 "id"
+    EXPECT_EQ(query_param("/status?uuid=abc", "id"), "");
+    EXPECT_EQ(query_param("/status", "id"), "");
+    EXPECT_EQ(query_param("/status?foo=bar", "id"), "");
+}

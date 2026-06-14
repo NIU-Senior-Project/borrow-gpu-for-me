@@ -47,3 +47,24 @@ std::string unescape_json(const std::string& s) {
     }
     return out;
 }
+
+std::string query_param(const std::string& path, const std::string& key) {
+    const auto q = path.find('?');
+    if (q == std::string::npos) return "";
+    const std::string query = path.substr(q + 1);
+
+    size_t pos = 0;
+    while (pos <= query.size()) {
+        const auto amp = query.find('&', pos);
+        const std::string pair =
+            query.substr(pos, amp == std::string::npos ? std::string::npos : amp - pos);
+        const auto eq = pair.find('=');
+        // 比對完整的鍵名，避免 "uuid" 誤中 "id"
+        if (eq != std::string::npos && pair.substr(0, eq) == key) {
+            return pair.substr(eq + 1);
+        }
+        if (amp == std::string::npos) break;
+        pos = amp + 1;
+    }
+    return "";
+}

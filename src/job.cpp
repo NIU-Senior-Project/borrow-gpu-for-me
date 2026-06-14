@@ -134,8 +134,8 @@ void start_job_listener(int port) {
             std::ostringstream response;
 
             // 路由 1：查詢狀態
-            if (method == "GET" && path.find("/status?id=") == 0) {
-                std::string jobId = path.substr(11);
+            if (method == "GET" && path.rfind("/status", 0) == 0) {
+                std::string jobId = query_param(path, "id");
                 std::string out_file = "/tmp/" + jobId + ".out";
                 std::string done_file = "/tmp/" + jobId + ".done";
 
