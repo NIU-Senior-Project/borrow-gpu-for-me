@@ -22,3 +22,28 @@ std::string extract_json_field(const std::string& body, const std::string& key) 
     if (secondQuote == std::string::npos) return "";
     return body.substr(firstQuote + 1, secondQuote - firstQuote - 1);
 }
+
+// Single pass so an escaped backslash (\\) is consumed as one unit and its
+// following char is not mis-decoded. Mirrors escape_json in request.cpp.
+std::string unescape_json(const std::string& s) {
+    std::string out;
+    out.reserve(s.size());
+    for (size_t i = 0; i < s.size(); ++i) {
+        if (s[i] == '\\' && i + 1 < s.size()) {
+            switch (s[++i]) {
+                case 'n': out += '\n'; break;
+                case 't': out += '\t'; break;
+                case 'r': out += '\r'; break;
+                case 'b': out += '\b'; break;
+                case 'f': out += '\f'; break;
+                case '"': out += '"'; break;
+                case '\\': out += '\\'; break;
+                case '/': out += '/'; break;
+                default: out += s[i]; break;
+            }
+        } else {
+            out += s[i];
+        }
+    }
+    return out;
+}

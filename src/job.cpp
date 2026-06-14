@@ -158,10 +158,9 @@ void start_job_listener(int port) {
                 std::string script = extract_json_field(body, "script");
 
                 if (!container.empty() && !script.empty()) {
-                    size_t pos = 0;
-                    while ((pos = script.find("\\n", pos)) != std::string::npos) { script.replace(pos, 2, "\n"); pos += 1; }
-                    pos = 0;
-                    while ((pos = script.find("\\\"", pos)) != std::string::npos) { script.replace(pos, 2, "\""); pos += 1; }
+                    // 還原送出端 escape_json 的所有跳脫（含 \t \r \\ 等），
+                    // 否則腳本內的 tab／反斜線會以字面殘留而損壞。
+                    script = unescape_json(script);
 
                     std::string job_id = run_podman_job_async(container, script);
                     std::cout << "\n[NEW JOB RECEIVED] Assigned Job ID: " << job_id << "\n";
