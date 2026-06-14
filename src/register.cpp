@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include "gpu.h"
+#include "auth.h"
 
 // 發送註冊請求到 Node Manager
 bool register_node(const std::string& manager_ip, int manager_port, const std::string& node_ip, const std::string& gpu_model) {
@@ -52,6 +53,7 @@ bool register_node(const std::string& manager_ip, int manager_port, const std::s
             << "Host: " << manager_ip << ":" << manager_port << "\r\n"
             << "Content-Type: application/json\r\n"
             << "Content-Length: " << body_str.size() << "\r\n"
+            << auth_header_line()
             << "Connection: close\r\n\r\n"
             << body_str;
 

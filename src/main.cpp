@@ -10,9 +10,15 @@
 #include "request.h"
 #include "job.h"
 #include "config.h"
+#include "auth.h"
 
 int main(int argc, char* argv[]) {
     auto config = load_config(".config");
+
+    if (!auth_enabled()) {
+        std::cerr << "[SECURITY WARNING] AUTH_TOKEN 未設定，認證已停用。"
+                     "公開部署前請務必設定 AUTH_TOKEN 環境變數。\n";
+    }
 
     std::cout << "Select Mode:\n";
     std::cout << "1. Upload GPU Resource (Register & Listen)\n";

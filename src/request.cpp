@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 #include "json.h"
+#include "auth.h"
 
 int view_online_gpus(std::string manager_ip) {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -37,6 +38,7 @@ int view_online_gpus(std::string manager_ip) {
     std::ostringstream request;
     request << "GET /nodes HTTP/1.1\r\n"
             << "Host: " << manager_ip << ":8080\r\n"
+            << auth_header_line()
             << "Connection: close\r\n\r\n";
 
     std::string req_str = request.str();
@@ -107,6 +109,7 @@ std::string http_get(const std::string& ip, int port, const std::string& path) {
     std::ostringstream request;
     request << "GET " << path << " HTTP/1.1\r\n"
             << "Host: " << ip << ":" << port << "\r\n"
+            << auth_header_line()
             << "Connection: close\r\n\r\n";
 
     std::string req_str = request.str();
@@ -147,6 +150,7 @@ int send_job(std::string manager_ip, std::string job_script, std::string node, s
             << "Host: " << manager_ip << ":8080\r\n"
             << "Content-Type: application/json\r\n"
             << "Content-Length: " << body_str.size() << "\r\n"
+            << auth_header_line()
             << "Connection: close\r\n\r\n"
             << body_str;
 

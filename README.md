@@ -137,6 +137,24 @@ CONTAINER_IMAGE=docker.io/rocm/dev-ubuntu-24.04:7.2
 
 請確保在執行程式前建立並配置此檔案。
 
+## 認證（AUTH_TOKEN）
+
+三個元件（本 CLI／節點、Node Manager、QtGUI）以共用密鑰做 Bearer Token
+認證，密鑰一律從**環境變數 `AUTH_TOKEN`** 讀取，三方必須設定相同值：
+
+```bash
+export AUTH_TOKEN="$(head -c 32 /dev/urandom | base64)"
+./build/borrow-gpu-for-me
+```
+
+- 節點端：未帶正確 `Authorization: Bearer <token>` 的請求一律回 `401`。
+- 客戶端：所有對 Manager／節點的請求都會自動帶上該標頭。
+- 若未設定 `AUTH_TOKEN`，程式會印出安全警告並**停用認證**（僅供本機開發）。
+
+> ⚠️ **公開部署警告**：Bearer Token 走明文 HTTP 會被竊聽／重放。對外公開時，
+> 請在 Manager／節點前面擺一台 TLS 反向代理（如 nginx／caddy）做 HTTPS 終結，
+> 不要直接把 8080／8081 暴露在公網。
+
 ## 專案結構
 
 ```text

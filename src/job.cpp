@@ -18,6 +18,7 @@
 
 #include "json.h"
 #include "gpu.h"
+#include "auth.h"
 
 std::string generate_job_id() {
     // 不可猜測：128 bits 隨機（避免他人枚舉時間戳去讀別人任務的輸出檔）。
@@ -139,6 +140,14 @@ void start_job_listener(int port) {
             stream >> method >> path >> version;
 
             std::ostringstream response;
+
+            // 認證：未帶有效 token 的請求一律拒絕（認證停用時放行）。
+            if (!is_request_authorized(headerPart)) {
+                response << "HTTP/1.1 401 Unauthorized\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
+                send(clientFd, response.str().data(), response.str().size(), 0);
+                close(clientFd);
+                continue;
+            }
 
             // 路由 1：查詢狀態
             if (method == "GET" && path.rfind("/status", 0) == 0) {
