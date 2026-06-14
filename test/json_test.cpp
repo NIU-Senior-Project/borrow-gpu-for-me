@@ -34,3 +34,19 @@ TEST(QueryParamTest, KeyBoundaryAndMissing) {
     EXPECT_EQ(query_param("/status", "id"), "");
     EXPECT_EQ(query_param("/status?foo=bar", "id"), "");
 }
+
+TEST(JobIdTest, AcceptsWellFormedIds) {
+    EXPECT_TRUE(is_valid_job_id("job_1700000000000"));
+    EXPECT_TRUE(is_valid_job_id("job_deadbeefcafe1234"));
+}
+
+TEST(JobIdTest, RejectsTraversalAndMalformed) {
+    // 路徑穿越／注入嘗試一律拒絕
+    EXPECT_FALSE(is_valid_job_id("../../etc/passwd"));
+    EXPECT_FALSE(is_valid_job_id("job_../../etc/passwd"));
+    EXPECT_FALSE(is_valid_job_id("job_a/b"));
+    EXPECT_FALSE(is_valid_job_id("job_a.out"));
+    EXPECT_FALSE(is_valid_job_id("job_"));     // 只有前綴
+    EXPECT_FALSE(is_valid_job_id(""));
+    EXPECT_FALSE(is_valid_job_id("nope_123")); // 缺前綴
+}

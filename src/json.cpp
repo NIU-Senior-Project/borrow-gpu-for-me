@@ -1,5 +1,6 @@
 #include "json.h"
 
+#include <cctype>
 #include <string>
 
 std::string extract_json_field(const std::string& body, const std::string& key) {
@@ -67,4 +68,15 @@ std::string query_param(const std::string& path, const std::string& key) {
         pos = amp + 1;
     }
     return "";
+}
+
+bool is_valid_job_id(const std::string& id) {
+    if (id.rfind("job_", 0) != 0) return false;  // 必須有 job_ 前綴
+    if (id.size() <= 4) return false;            // 前綴後要有實際內容
+    for (char c : id) {
+        if (!std::isalnum(static_cast<unsigned char>(c)) && c != '_') {
+            return false;
+        }
+    }
+    return true;
 }

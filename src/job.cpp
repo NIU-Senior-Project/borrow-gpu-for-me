@@ -5,6 +5,8 @@
 #include <sstream>
 #include <chrono>
 #include <fstream>
+#include <iomanip>
+#include <random>
 
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -18,9 +20,14 @@
 #include "gpu.h"
 
 std::string generate_job_id() {
-    auto now = std::chrono::system_clock::now();
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
-    return "job_" + std::to_string(ms);
+    // 不可猜測：128 bits 隨機（避免他人枚舉時間戳去讀別人任務的輸出檔）。
+    std::random_device rd;
+    std::ostringstream os;
+    os << "job_" << std::hex << std::setfill('0');
+    for (int i = 0; i < 4; ++i) {
+        os << std::setw(8) << rd();
+    }
+    return os.str();
 }
 
 // 非同步執行 Podman，並在結束時建立 .done 檔案
@@ -136,22 +143,28 @@ void start_job_listener(int port) {
             // 路由 1：查詢狀態
             if (method == "GET" && path.rfind("/status", 0) == 0) {
                 std::string jobId = query_param(path, "id");
-                std::string out_file = "/tmp/" + jobId + ".out";
-                std::string done_file = "/tmp/" + jobId + ".done";
 
-                bool is_done = (access(done_file.c_str(), F_OK) == 0);
-
-                // 讀取輸出檔案內容
-                std::ifstream ifs(out_file);
-                std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-
-                if (is_done) {
-                    response << "HTTP/1.1 200 OK\r\nContent-Length: " << content.size() << "\r\nConnection: close\r\n\r\n" << content;
+                // 防路徑穿越：jobId 會被拼進 /tmp/<id>.out，必須先驗證格式。
+                if (!is_valid_job_id(jobId)) {
+                    response << "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
                 } else {
-                    // 還沒跑完，回傳 202 Accepted 與目前的輸出進度
-                    response << "HTTP/1.1 202 Accepted\r\nContent-Length: " << content.size() << "\r\nConnection: close\r\n\r\n" << content;
+                    std::string out_file = "/tmp/" + jobId + ".out";
+                    std::string done_file = "/tmp/" + jobId + ".done";
+
+                    bool is_done = (access(done_file.c_str(), F_OK) == 0);
+
+                    // 讀取輸出檔案內容
+                    std::ifstream ifs(out_file);
+                    std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+
+                    if (is_done) {
+                        response << "HTTP/1.1 200 OK\r\nContent-Length: " << content.size() << "\r\nConnection: close\r\n\r\n" << content;
+                    } else {
+                        // 還沒跑完，回傳 202 Accepted 與目前的輸出進度
+                        response << "HTTP/1.1 202 Accepted\r\nContent-Length: " << content.size() << "\r\nConnection: close\r\n\r\n" << content;
+                    }
                 }
-            } 
+            }
             // 路由 2：提交新任務
             else if (method == "POST") {
                 std::string container = extract_json_field(body, "container");
